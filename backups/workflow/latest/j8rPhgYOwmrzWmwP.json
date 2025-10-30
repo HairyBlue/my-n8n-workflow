@@ -1,0 +1,840 @@
+{
+  "updatedAt": "2025-10-30T12:12:48.000Z",
+  "createdAt": "2025-10-30T05:53:12.827Z",
+  "id": "j8rPhgYOwmrzWmwP",
+  "name": "Workflow Backups",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        384,
+        144
+      ],
+      "id": "bbc6fdda-60b9-4861-bb17-d6cd7c3c22c3",
+      "name": "Get many workflows",
+      "credentials": {
+        "n8nApi": {
+          "id": "8ZWpDvM6irZRKC6e",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        576,
+        144
+      ],
+      "id": "ca45c8ae-4d91-4f2e-83a6-7294e20cb169",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "toJson",
+        "options": {
+          "fileName": "={{ $json.name }} - {{ Date.now() }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        784,
+        144
+      ],
+      "id": "cd7c8bde-44ca-45ac-a887-886667dad134",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "11kbBFid-dICIguCLqTf8g6DXYqF_PwV6",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        976,
+        144
+      ],
+      "id": "c4e28636-dbb2-4e84-a8f1-38decf9c3bf0",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Su1MGZhkzYrLvfgK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "driveId": {
+            "__rl": true,
+            "value": "My Drive",
+            "mode": "list",
+            "cachedResultName": "My Drive",
+            "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "11kbBFid-dICIguCLqTf8g6DXYqF_PwV6"
+          }
+        },
+        "options": {
+          "fields": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        976,
+        -16
+      ],
+      "id": "48f4b9c8-f666-41df-b7f5-9ba99c5e6c90",
+      "name": "Search files and folders",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Su1MGZhkzYrLvfgK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7d57cbb1-458b-4a69-b275-17842d57cf5e",
+              "leftValue": "={{ new Date($json.modifiedTime).getTime() }}",
+              "rightValue": "={{ Date.now() - 13680000 }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        -16
+      ],
+      "id": "1876c5b4-5d2f-49cb-8dd7-735dafb8103a",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "ARCHIVE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e7908c50-b545-494f-bc8c-53b0e8eb8a49"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9c49e97d-d5df-4240-a005-6a15d511f930",
+                    "leftValue": "={{ $json.type }}",
+                    "rightValue": "FILE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        1392,
+        208
+      ],
+      "id": "248b8f0e-4c60-428a-af1a-a4b088884cf3",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "name": "={{ $json.data.archiveFolderName }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1UDJJWxtWAEjS4FMrTGYEARx1_rx2PBIK",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1408,
+        -16
+      ],
+      "id": "60704e04-ed2f-42e3-bde6-88bf49385937",
+      "name": "Create folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Su1MGZhkzYrLvfgK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        128,
+        32
+      ],
+      "id": "7a4d9b1f-c1eb-43a1-a878-90874cfcb20b",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1600,
+        208
+      ],
+      "id": "54787fcc-caa6-4ad4-8d5f-801679b5265a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "179b9921-2de8-426d-9e6b-ffeb62135176",
+              "name": "type",
+              "value": "FOLDER_CREATION",
+              "type": "string"
+            },
+            {
+              "id": "997c8bd1-5bdc-4ab6-8828-128d03ac4648",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1600,
+        -16
+      ],
+      "id": "0f0dcc52-5694-49fe-9e4d-3e4e1c45d8e2",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.fileId }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "={{ $json.folderId }}",
+          "mode": "id"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1920,
+        208
+      ],
+      "id": "306e3590-bf14-4951-8d31-8aef5661a85a",
+      "name": "Move file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Su1MGZhkzYrLvfgK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        784,
+        -16
+      ],
+      "id": "fe470448-a246-4d3c-85d9-98aa3968b55e",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "resource": "folder",
+        "operation": "deleteFolder",
+        "folderNoRootId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2416,
+        208
+      ],
+      "id": "5e3924f8-13a4-477a-a90a-65f1b9280921",
+      "name": "Delete folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Su1MGZhkzYrLvfgK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f36887f6-1f2f-4c0f-9eee-ece59b6bab5e",
+              "leftValue": "={{ new Date($json.modifiedTime).getTime() }}",
+              "rightValue": "={{ Date.now() - 259200000 }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        2256,
+        208
+      ],
+      "id": "009893d5-9663-4aaa-8801-365127253f0d",
+      "name": "Delete File Age 3 Days"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "driveId": {
+            "__rl": true,
+            "value": "My Drive",
+            "mode": "list",
+            "cachedResultName": "My Drive",
+            "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "1UDJJWxtWAEjS4FMrTGYEARx1_rx2PBIK",
+            "mode": "id"
+          }
+        },
+        "options": {
+          "fields": [
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2080,
+        208
+      ],
+      "id": "3be7b8d9-1ab5-4a0b-adce-3cc5b8cefb05",
+      "name": "Search Archive Folder",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Su1MGZhkzYrLvfgK",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const folderCreation = $input.first().json;\nconst id = folderCreation.id;\nconst files = $input.all()[1].json.data.fileDetails;\n\nconst out = [];\nfor (const item of files) {\n   out.push({\n      folderId: id,\n      fileId: item.fileId\n    })\n}\n\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        208
+      ],
+      "id": "d0b4c62e-9997-45a7-98c1-7fcc7ee61bfb",
+      "name": "mutate data to array"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 4
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        128,
+        272
+      ],
+      "id": "371416e4-d40b-46d2-8718-1eacfb50a7c3",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "jsCode": "const archiveFolderName = \"archive-\" + Date.now();\nconst fileDetails = [];\n\nfor (const item of $input.all()) {\n  item.json.myNewField = 1;\n  fileDetails.push({\n    archiveFolderName: archiveFolderName,\n    fileName: item.json.name,\n    fileId: item.json.id\n  })\n}\n\nconst out1 = {\n  type: \"ARCHIVE\",\n  data: {\n    archiveFolderName: archiveFolderName\n  }\n}\n\nconst out2 = {\n  type: \"FILE\",\n  data: {\n    fileDetails: fileDetails\n  }\n}\n\n\nreturn [\n  {json: out1},\n  {json: out2}\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        208
+      ],
+      "id": "4471b7ec-8adf-42ca-aaa7-974270f1fb9a",
+      "name": "output 2 types of data"
+    },
+    {
+      "parameters": {
+        "command": "n8n export:credentials --backup --output=backups/workflow/latest"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        480,
+        544
+      ],
+      "id": "ef275fbc-09f3-4b1c-8175-fed2bac8b273",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "command": "n8n export:workflow --backup --output=backups/workflow/latest"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        288,
+        544
+      ],
+      "id": "bb174700-ea84-4589-b494-d1f570073cc3",
+      "name": "Execute Command1"
+    },
+    {
+      "parameters": {
+        "content": "## [Cli Guides](https://docs.n8n.io/hosting/cli-commands)\n## [ClI Export Guides](https://docs.n8n.io/hosting/cli-commands/#export-workflows-and-credentials)"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        112,
+        704
+      ],
+      "typeVersion": 1,
+      "id": "1ac5375f-826d-4a45-9f29-091b06591a5b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 */4 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        112,
+        544
+      ],
+      "id": "296ecf65-200d-4eb1-b14c-63620e13ea5a",
+      "name": "custom cron"
+    }
+  ],
+  "connections": {
+    "Get many workflows": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search files and folders": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "output 2 types of data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Create folder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Create folder": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "mutate data to array",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Search files and folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete File Age 3 Days": {
+      "main": [
+        [
+          {
+            "node": "Delete folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Archive Folder": {
+      "main": [
+        [
+          {
+            "node": "Delete File Age 3 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move file": {
+      "main": [
+        [
+          {
+            "node": "Search Archive Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "mutate data to array": {
+      "main": [
+        [
+          {
+            "node": "Move file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "output 2 types of data": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Command1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "custom cron": {
+      "main": [
+        [
+          {
+            "node": "Execute Command1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": [
+        20
+      ]
+    },
+    "node:Schedule Trigger1": {
+      "recurrenceRules": []
+    },
+    "node:custom cron": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "5448d91e-8dd1-41ec-af16-784d835eb11a",
+  "triggerCount": 2,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-10-30T05:53:12.829Z",
+      "createdAt": "2025-10-30T05:53:12.829Z",
+      "role": "workflow:owner",
+      "workflowId": "j8rPhgYOwmrzWmwP",
+      "projectId": "LTgLXeKsh1adinna",
+      "project": {
+        "updatedAt": "2025-10-30T05:17:05.767Z",
+        "createdAt": "2025-10-30T05:13:55.787Z",
+        "id": "LTgLXeKsh1adinna",
+        "name": "Nicki Marty Pecision <pecision.nickimarty@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
